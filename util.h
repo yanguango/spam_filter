@@ -6,7 +6,7 @@
 
 using namespace std;
 
-typedef pair<string, int> PAIR; 
+typedef pair<string, float> PAIR; 
 
 struct CmpByValue {  
   bool operator()(const PAIR& lhs, const PAIR& rhs) {  
@@ -14,7 +14,7 @@ struct CmpByValue {
   }  
 };
 
-vector<PAIR> SortWordPair(map<string, int> &wordmap) {
+vector<PAIR> SortWordPair(map<string, float> &wordmap) {
   vector<PAIR> wordvec(wordmap.begin(), wordmap.end());  
   sort(wordvec.begin(), wordvec.end(), CmpByValue());  
   
