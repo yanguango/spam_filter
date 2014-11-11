@@ -14,18 +14,20 @@ const string SingleProcess::FEATURE_CHARS = ";([!$#";
 
 class ClassProcess {
   private:
-    string file_path;
+    string ham_path;
+    string spam_path;
     map<string, float> class_word_map;
     int num_rows;
     vector<string> features;
 
   public:
-    ClassProcess(string fp){
-      file_path = fp;
+    ClassProcess(string hp, string sp){
+      ham_path = hp;
+      spam_path = sp;
       num_rows = 0;
     }
 
-    vector<string> ListEmailInDir() {
+    vector<string> ListEmailInDir(string file_path) {
       DIR* dir;
       dirent* pdir;
       vector<string> files;
@@ -47,18 +49,26 @@ class ClassProcess {
     }
 
     map<string, float> process() {
-      vector<string> train = ListEmailInDir();
+      vector<string> ham = ListEmailInDir(ham_path);
+      vector<string> spam = ListEmailInDir(spam_path);
       
-      std::random_shuffle (train.begin(), train.end());
-      vector<string> test = SplitTrainTest(train);
+      // std::random_shuffle (train.begin(), train.end());
+      // vector<string> test = SplitTrainTest(train);
 
-      for(int i = 0; i < train.size(); i++) {
-        SingleProcess sp(file_path + train[i]);
-        map<string, float> map = sp.WordCount();
+      for(int i = 0; i < ham.size(); i++) {
+        SingleProcess sp(ham_path + ham[i]);
+        map<string, double> map = sp.WordCount();
         class_word_map.insert(map.begin(), map.end());
         num_rows++;
       }
-      
+
+      for(int i = 0; i < spam.size(); i++) {
+        SingleProcess sp(spam_path + spam[i]);
+        map<string, double> map = sp.WordCount();
+        class_word_map.insert(map.begin(), map.end());
+        num_rows++;
+      }
+
       vector<PAIR> wordvec = SortWordPair(class_word_map);
 
       vector<PAIR> pair_features(wordvec.begin(), wordvec.begin() + 100);
@@ -71,13 +81,21 @@ class ClassProcess {
       myfile.close();
       
 
-      myfile.open("train.txt", std::ofstream::out | std::ofstream::app);
-      for(int i = 0; i < train.size(); i++) {
-        SingleProcess sp(file_path + train[i]);
+      myfile.open("data.txt", std::ofstream::out | std::ofstream::app);
+      for(int i = 0; i < ham.size(); i++) {
+        SingleProcess sp(ham_path + ham[i]);
         sp.WordCount();
         string s = sp.output(features);
         myfile << s << endl;
       }
+
+      for(int i = 0; i < spam.size(); i++) {
+        SingleProcess sp(spam_path + spam[i]);
+        sp.WordCount();
+        string s = sp.output(features);
+        myfile << s << endl;
+      }
+
       myfile.close();
 
       return class_word_map;
