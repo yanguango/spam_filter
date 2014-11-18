@@ -1,9 +1,6 @@
-data = dlmread('bool_data.txt');
-dims = 201;
+data = dlmread('tf_data.txt');
+dims = 201
 data = reshape(data,[],dims);
-
-accuracies = [];
-for j = 1:10
 rp = randperm(length(data));
 data=data(rp,:);
 
@@ -19,27 +16,43 @@ test_data = pca_data(length(pca_data)/2+1:end,:);
 active_feat = [1:pc_dims];
 
 label = pc_dims + 1;
-mean1 = mean(train_data(train_data(:,label)==0,active_feat));
-mean2 = mean(train_data(train_data(:,label)==1,active_feat));
 
-covm1 = cov(train_data(train_data(:,label)==0,active_feat));
-covm2 = cov(train_data(train_data(:,label)==1,active_feat));
 prior1tmp = length(train_data(train_data(:,label)==0)); 
 prior2tmp = length(train_data(train_data(:,label)==1));
 prior1 = prior1tmp/(prior1tmp+prior2tmp);
 prior2 = prior2tmp/(prior1tmp+prior2tmp);
 
+mean1 = [];
+var1 = [];
+mean2 = [];
+var1 = [];
+
+for i = 1:pc_dims - 1
+    m = mean(train_data(train_data(:,label)==0, i));
+    mean1(i) = m;
+    v = var(train_data(train_data(:,label)==0, i));
+    var1(i) = v;
+    
+    m = mean(train_data(train_data(:,label)==1, i));
+    mean2(i) = m;
+    v = var(train_data(train_data(:,label)==1, i));
+    var2(i) = v;
+end
+
 correct = 0;
 wrong = 0;
-
-
 for i = 1:length(test_data)
-    lklhood1 = exp(((test_data(i,active_feat)-mean1) * inv(covm1) * transpose((test_data(i,active_feat)-mean1))) / (-2)) / sqrt(det(covm1));
-    lklhood2 = exp(((test_data(i,active_feat)-mean2) * inv(covm2) * transpose((test_data(i,active_feat)-mean2))) / (-2)) / sqrt(det(covm2));
-
+    lklhood1 = 1;
+    lklhood2 = 1;
+    
+    for j = 1:length(mean1)
+        lklhood1 = lklhood1 * normpdf(test_data(i, j), mean1(j), var1(j));
+        lklhood2 = lklhood2 * normpdf(test_data(i, j), mean2(j), var2(j));
+    end
+    
     post1 = lklhood1 * prior1;
     post2 = lklhood2 * prior2;
-
+    
     if(post1 > post2 && test_data(i,label) == 0)
         correct = correct+1;
     elseif(post1 < post2 && test_data(i,label) == 1)
@@ -48,10 +61,7 @@ for i = 1:length(test_data)
         wrong = wrong+1;
     end
 end
-accuracy = correct / (correct + wrong);
-accuracies(j) = accuracy;
 
-end
-
+accuracy = correct / (correct + wrong)
 
 

@@ -14,7 +14,7 @@ def process_class(file_path):
     for root, dirs, files in os.walk(file_path):
         paths.extend([os.path.join(root, name) for name in files])
     
-    ham_size = len(paths)
+    email_size = len(paths)
     
     words_freq_counter_data = []
     
@@ -61,13 +61,13 @@ def process_class(file_path):
             words_freq_counter[word] = word_stats[word] * 100.0 / word_total
     
         for punc in punc_stats:
-            words_freq_counter[word] = punc_stats[punc] * 100.0 / punc_total
+            words_freq_counter[punc] = punc_stats[punc] * 100.0 / punc_total
     
         words_freq_counter_data.append(words_freq_counter)
 
     class_words_counter = { k: class_words_counter[k] for k in class_words_counter.keys() if k not in STOPLIST }
     for k,v in class_words_counter.items():
-        class_words_counter[k] = v * 1.0 / ham_size
+        class_words_counter[k] = v * 1.0 /  email_size
     return Counter(class_words_counter), words_freq_counter_data
 
 def extract_features():
@@ -85,7 +85,7 @@ def extract_features():
     for k in total_counter.keys():
         diff_counter[k] = abs(ham_words_counter[k] - spam_words_counter[k])
     
-    features = [k for k,v in diff_counter.most_common(100)]
+    features = [k for k,v in diff_counter.most_common(200)]
     
     if CONSIDER_CAP_FEATURES:
         features += CAP_FEATUES
@@ -94,23 +94,30 @@ def extract_features():
     
     tf_data = open('tf_data.txt', 'wt')
     bool_data = open('bool_data.txt', 'wt')
-
+    tf_csv_data = open('tf_csv_data.csv', 'wt')
+    bool_csv_data = open('bool_csv_data.csv', 'wt')
+    tf_csv_data.write(",".join([str(i) for i in xrange(1,202)]) + "\n")
+    bool_csv_data.write(",".join([str(i) for i in xrange(1,202)]) + "\n")
     for c in ['ham', 'spam']:
         for m in eval(c + '_freq_counter_data'):
             tf_output = []
             bool_output = []
+            
+                
             for feature in features:
                 tf_output.append(str(m[feature]))
                 bool_output.append("0" if m[feature] == 0 else "1")
             
-            label = '0\n' if c == 'ham' else '1\n'
+            label = 'ham\n' if c == 'ham' else 'spam\n'
             tf_output.append(label)
             bool_output.append(label)
             tf_data.write(" ".join(tf_output))
             bool_data.write(" ".join(bool_output))
+            tf_csv_data.write(",".join(tf_output))
+            bool_csv_data.write(",".join(bool_output))
     
     tf_data.close()
     bool_data.close()
-
+    tf_csv_data.close()
 
 extract_features()
