@@ -90,7 +90,9 @@ def extract_features():
     if CONSIDER_CAP_FEATURES:
         features += CAP_FEATUES
 
-    print features
+    features_data = open('features.txt', 'wt')
+    features_data.write(",".join(features))
+    features_data.close()
     
     tf_data = open('tf_data.txt', 'wt')
     bool_data = open('bool_data.txt', 'wt')
@@ -108,7 +110,7 @@ def extract_features():
                 tf_output.append(str(m[feature]))
                 bool_output.append("0" if m[feature] == 0 else "1")
             
-            label = 'ham\n' if c == 'ham' else 'spam\n'
+            label = '0\n' if c == 'ham' else '1\n'
             tf_output.append(label)
             bool_output.append(label)
             tf_data.write(" ".join(tf_output))
