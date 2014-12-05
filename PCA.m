@@ -2,8 +2,6 @@ data = dlmread('tf_data.txt');
 dims = 201;
 data = reshape(data,[],dims);
 
-accuracies = [];
-
 rp = randperm(length(data));
 data=data(rp,:);
 
@@ -12,7 +10,10 @@ data=data(rp,:);
 max_accuracy = 0;
 best_pc_dims = 0;
 
-pc_dims = 120;
+accuracies = [];
+
+for j = [50:170]
+pc_dims = j;
 P = coeff(:, 1:pc_dims);
 dlmwrite('P.txt', transpose(P));
 pca_data = transpose(transpose(P) * transpose(data(:, 1:dims-1)));
@@ -43,8 +44,6 @@ wrong = 0;
 for i = 1:length(test_data)
     lklhood1 = mvnpdf(test_data(i,active_feat), mean1, covm1);
     lklhood2 = mvnpdf(test_data(i,active_feat), mean2, covm2);
-     disp(lklhood1);
-     disp(lklhood2);
     post1 = lklhood1 * prior1;
     post2 = lklhood2 * prior2;
 
@@ -57,7 +56,11 @@ for i = 1:length(test_data)
     end
 end
 accuracy = correct / (correct + wrong);
-
-
+accuracies(j - 49) = accuracy;
+if(accuracy > max_accuracy)
+    max_accuracy = accuracy;
+    best_pc_dims = j;
+end
+end
 
 

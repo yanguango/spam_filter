@@ -15,7 +15,7 @@ def mvnpdf(x, mu, sigma):
     inv_sigma = inv(sigma)
     desc = dot(dev, dot(inv_sigma, transpose(dev)))
     c0 = (2*pi)**(-0.5*k)
-    c1 = 8.81852703658386e+23
+    c1 = det**-0.5;
     print("c0----%.256f" % c0)
     print("c1----%.256f" % c1)
     return c0*c1*exp(-0.5*desc)

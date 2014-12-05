@@ -23,7 +23,7 @@ def process_class(file_path):
         words_freq_counter = Counter()
         for line in open(file_path):
             for word in line.split():
-                if (len(word) > 1 or (word in FEATURE_CHARS)):
+                if ((len(word) > 1 and (not word.isdigit())) or (word in FEATURE_CHARS)):
                     words_counter[word] += 1
         
         cap_num = 0
